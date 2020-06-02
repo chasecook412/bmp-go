@@ -12,6 +12,15 @@ import (
 
 var port int
 var verbose bool
+var globalPort = 8081
+
+type BProxy struct {
+	proxy *goproxy.ProxyHttpServer
+}
+
+type ProxyMap map[int]BProxy
+
+var m ProxyMap
 
 func HandleProxyList(res http.ResponseWriter,
 	req *http.Request) {
@@ -39,18 +48,25 @@ func HandleProxyCreate(res http.ResponseWriter,
 	// useEcc
 	// trustAllServers
 
+	queryParams := req.URL.Query()
+	queryPort := queryParams["port"]
 	log.Println("starting a new proxy")
+	log.Println("query port is ", queryPort)
 
-	// create a new proxy pick a new port
-	// how do you pick a port
-	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = verbose
-	http.ListenAndServe(":8080", proxy)
-	// TODO: need a place to store the proxies
+	p := goproxy.NewProxyHttpServer()
+	p.Verbose = verbose
+	proxyPort := globalPort
+	globalPort++
+	m[proxyPort] = BProxy{proxy: p}
+	cs := fmt.Sprintf(":%d", proxyPort)
+	log.Println("listening on ", cs)
+	go http.ListenAndServe(cs, p)
 
 }
 
 func main() {
+
+	m = make(map[int]BProxy)
 
 	port = 8081 // default port to start picking
 
@@ -65,4 +81,5 @@ func main() {
 	r.HandleFunc("/proxy", HandleProxyList).Methods("GET")
 	r.HandleFunc("/proxy", HandleProxyCreate).Methods("POST")
 	r.HandleFunc("/proxy/{port}", HandleProxyDelete).Methods("DELETE")
+	http.ListenAndServe(":8080", r)
 }
