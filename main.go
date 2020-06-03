@@ -51,7 +51,11 @@ func HandleProxyCreate(res http.ResponseWriter,
 	queryParams := req.URL.Query()
 	queryPort := queryParams["port"]
 	log.Println("starting a new proxy")
-	log.Println("query port is ", queryPort)
+	log.Println("query port is ", queryPort,
+		len(queryPort))
+
+	httpProxy := queryParams["httpProxy"]
+	log.Println("httpProxy param", httpProxy)
 
 	p := goproxy.NewProxyHttpServer()
 	p.Verbose = verbose
