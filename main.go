@@ -35,6 +35,9 @@ func HandleProxyDelete(res http.ResponseWriter,
 	vars := mux.Vars(req)
 	port := vars["port"]
 	fmt.Println("delete proxy with port", port)
+
+	// TODO: need shut this proxy down
+	// m[port]
 }
 
 func HandleProxyCreate(res http.ResponseWriter,
@@ -51,14 +54,29 @@ func HandleProxyCreate(res http.ResponseWriter,
 	queryParams := req.URL.Query()
 	queryPort := queryParams["port"]
 	log.Println("starting a new proxy")
-	log.Println("query port is ", queryPort,
-		len(queryPort))
+
+	if len(queryPort) > 0 {
+		log.Println("query port is ", queryPort,
+			len(queryPort))
+	}
 
 	httpProxy := queryParams["httpProxy"]
-	log.Println("httpProxy param", httpProxy)
+	if len(httpProxy) > 0 {
+		// need to use this proxy
+		// for connect
+		log.Println("httpProxy param", httpProxy)
+
+	}
 
 	p := goproxy.NewProxyHttpServer()
 	p.Verbose = verbose
+	if len(httpProxy) > 0 {
+		ch := func(req *http.Request) {
+			// do nothing here?
+			log.Println("got called in connect handler doing nothing")
+		}
+		p.NewConnectDialToProxyWithHandler(httpProxy[0], ch)
+	}
 	proxyPort := globalPort
 	globalPort++
 	m[proxyPort] = BProxy{proxy: p}
