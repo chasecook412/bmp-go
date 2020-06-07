@@ -87,7 +87,7 @@ func HandleProxyCreate(res http.ResponseWriter,
 }
 
 func main() {
-
+	fmt.Println("BrowserMobProxy-Go Starting")
 	m = make(map[int]BProxy)
 
 	port = 8081 // default port to start picking
@@ -103,5 +103,8 @@ func main() {
 	r.HandleFunc("/proxy", HandleProxyList).Methods("GET")
 	r.HandleFunc("/proxy", HandleProxyCreate).Methods("POST")
 	r.HandleFunc("/proxy/{port}", HandleProxyDelete).Methods("DELETE")
-	http.ListenAndServe(":8080", r)
+
+	addr := ":8080"
+	fmt.Printf("Listening on %s", addr)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
